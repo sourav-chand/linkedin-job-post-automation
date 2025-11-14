@@ -6,16 +6,13 @@ export const generateJobDescription = async (
   geminiApiKey
 ) => {
   // const GEMENI_KEY = geminiApiKey;
-  if (!geminiApiKey) {
-    const GEMENI_KEY = process.env.GEMINI_API_KEY;
-    console.log(GEMENI_KEY);
-  }
-
+  
+const GEMENI_KEY = process.env.GEMINI_API_KEY;
   const ai = new GoogleGenAI({
     apiKey: GEMENI_KEY,
   });
   const prompt = `You are a professional LinkedIn content creator and technology trend analyst. 
-Your task is to generate a comprehensive, engaging, and insight-driven LinkedIn post.
+Your task is to generate a comprehensive, engaging, and insight-driven LinkedIn post within 2500 characters.
 
 Topic: "${postContent}"
 Tone: ${tone}

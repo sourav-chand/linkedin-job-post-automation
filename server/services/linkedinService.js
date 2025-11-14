@@ -12,6 +12,7 @@ function formatJobForLinkedIn(generatedPost) {
   ].join("\n\n");
 }
 
+
 export const postToLinkedIn = async (generatedPost, linkedinToken) => {
   // const accessToken = linkedinToken.toString().trim().replace(/(\r\n|\n|\r)/gm, "");
   // const accessToken = process.env.LINKEDIN_ACCESS_TOKEN;
@@ -26,6 +27,15 @@ export const postToLinkedIn = async (generatedPost, linkedinToken) => {
   //     message: "Job posted successfully to LinkedIn (simulated)",
   //   };
   // }
+  let text = formatJobForLinkedIn(generatedPost)
+  console.log("text", text)
+
+  if (typeof text !== "string") {
+    return {
+      success: false,
+      error: "No content to post to LinkedIn",
+    };
+  }
 
   let accessToken = linkedinToken
     ?.toString()
@@ -58,7 +68,7 @@ export const postToLinkedIn = async (generatedPost, linkedinToken) => {
       specificContent: {
         "com.linkedin.ugc.ShareContent": {
           shareCommentary: {
-            text: formatJobForLinkedIn(generatedPost),
+            text: text,
           },
           shareMediaCategory: "NONE",
         },
