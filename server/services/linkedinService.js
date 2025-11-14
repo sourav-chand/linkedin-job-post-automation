@@ -1,35 +1,42 @@
 import axios from "axios";
-function formatJobForLinkedIn(jobData) {
-  const { title, company, location, description, skills } = jobData;
+function formatJobForLinkedIn(generatedPost) {
+  const { title, intro, mainContent, keyTakeaways = [], callToAction, hashtags = [] } = generatedPost;
 
-  return `
-📢 *New Job Opportunity!*
-
-**Role:** ${title || "Not specified"}
-**Company:** ${company || "Confidential"}
-**Location:** ${location || "Remote / Flexible"}
-
-📝 **Job Description:**
-${description || "No description provided."}
-
-💡 **Skills Required:**
-${Array.isArray(skills) ? skills.join(", ") : skills || "Not specified"}
-
-Apply now or share this opportunity with your network! 🚀
-`;
+  return [
+    title,
+    intro,
+    mainContent,
+    keyTakeaways.length ? "Key Takeaways:\n- " + keyTakeaways.join("\n- ") : "",
+    callToAction,
+    hashtags.length ? hashtags.join(" ") : ""
+  ].join("\n\n");
 }
 
-export const postToLinkedIn = async (jobData) => {
-  const accessToken = process.env.LINKEDIN_ACCESS_TOKEN;
+export const postToLinkedIn = async (generatedPost, linkedinToken) => {
+  // const accessToken = linkedinToken.toString().trim().replace(/(\r\n|\n|\r)/gm, "");
+  // const accessToken = process.env.LINKEDIN_ACCESS_TOKEN;
+  // console.log("Access token received:", `"${accessToken}"`);
+
+  // if (!accessToken) {
+  //   console.log("Simulating LinkedIn post (no valid access token provided)");
+  //   console.log("Job data:", JSON.stringify(generatedPost, null, 2));
+  //   return {
+  //     success: true,
+  //     postId: "simulated_post_id_" + Date.now(),
+  //     message: "Job posted successfully to LinkedIn (simulated)",
+  //   };
+  // }
+
+  let accessToken = linkedinToken
+    ?.toString()
+    .trim()
+    .replace(/(\r\n|\n|\r)/gm, "");
+
   if (!accessToken) {
-    console.log("Simulating LinkedIn post (no valid access token provided)");
-    console.log("Job data:", JSON.stringify(jobData, null, 2));
-    return {
-      success: true,
-      postId: "simulated_post_id_" + Date.now(),
-      message: "Job posted successfully to LinkedIn (simulated)",
-    };
+    accessToken = process.env.LINKEDIN_ACCESS_TOKEN?.trim();
   }
+
+  console.log("Access token received:", `"${accessToken}"`);
 
   try {
     const profileResponse = await axios.get(
@@ -43,6 +50,7 @@ export const postToLinkedIn = async (jobData) => {
     );
 
     const authorId = profileResponse.data.sub;
+    console.log("authorId", authorId);
 
     const shareData = {
       author: `urn:li:person:${authorId}`,
@@ -50,7 +58,7 @@ export const postToLinkedIn = async (jobData) => {
       specificContent: {
         "com.linkedin.ugc.ShareContent": {
           shareCommentary: {
-            text: formatJobForLinkedIn(jobData),
+            text: formatJobForLinkedIn(generatedPost),
           },
           shareMediaCategory: "NONE",
         },
@@ -71,6 +79,7 @@ export const postToLinkedIn = async (jobData) => {
         },
       }
     );
+    console.log("reached");
 
     return {
       success: true,

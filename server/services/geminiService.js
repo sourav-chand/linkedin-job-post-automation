@@ -1,30 +1,45 @@
 import { GoogleGenAI } from "@google/genai";
 
-export const generateJobDescription = async (jobRole, manner) => {
-  const GEMENI_KEY = process.env.GEMINI_API_KEY;
-  console.log(GEMENI_KEY);
-
-  if (!GEMENI_KEY) {
-    throw new Error("Missing GEMINI_API_KEY environment variable");
+export const generateJobDescription = async (
+  postContent,
+  tone,
+  geminiApiKey
+) => {
+  // const GEMENI_KEY = geminiApiKey;
+  if (!geminiApiKey) {
+    const GEMENI_KEY = process.env.GEMINI_API_KEY;
+    console.log(GEMENI_KEY);
   }
 
   const ai = new GoogleGenAI({
     apiKey: GEMENI_KEY,
   });
-  const prompt = `You are a professional HR recruiter. Generate a comprehensive job posting for the role: "${jobRole} in an ${manner}".
+  const prompt = `You are a professional LinkedIn content creator and technology trend analyst. 
+Your task is to generate a comprehensive, engaging, and insight-driven LinkedIn post.
 
-Please search and provide the latest industry requirements and trends for this role. Structure your response as a JSON object with the following fields:
+Topic: "${postContent}"
+Tone: ${tone}
+
+Step 1: Research the latest (2024–2025) industry trends, insights, and discussions related to this topic.
+Focus on emerging tools, frameworks, success stories, and opinions shared by top industry voices.
+
+Step 2: Based on your findings, craft a high-quality LinkedIn post structured as JSON in the following format:
+
 {
-  "title": "Job title",
-  "description": "A compelling 2-3 paragraph job description",
-  "requirements": ["requirement 1", "requirement 2", ...],
-  "responsibilities": ["responsibility 1", "responsibility 2", ...],
-  "skills": ["skill 1", "skill 2", ...],
-  "experience": "Years of experience required",
-  "education": "Education requirements"
+  "title": "An attention-grabbing headline or hook suitable for LinkedIn",
+  "intro": "A 2–3 sentence introduction that connects with the audience and highlights the topic's relevance.",
+  "mainContent": "2–3 paragraphs of valuable insights, latest trends, or thought-leadership points about the topic.",
+  "keyTakeaways": ["Key takeaway 1", "Key takeaway 2", "Key takeaway 3"],
+  "callToAction": "A closing line that encourages engagement (e.g., question, opinion, or share request).",
+  "hashtags": ["#Technology", "#Innovation", "#YourTopic"]
 }
 
-Return ONLY valid JSON. No extra words, no markdown, no explanation.`;
+Step 3:
+- Ensure the content reflects real, current (2024–2025) technology trends.
+- Keep the writing natural, conversational, and professional.
+- Include relatable insights or data points if available.
+- Tailor the tone (${tone}) to sound authentic for a human LinkedIn creator.
+- Return ONLY valid JSON. No markdown, no extra text, no commentary.`;
 
   try {
     const result = await ai.models.generateContent({
@@ -64,7 +79,10 @@ Return ONLY valid JSON. No extra words, no markdown, no explanation.`;
       data: finalJson,
     };
   } catch (error) {
-    console.error("Error:", error);
-    return { success: false, error: error.message };
+    console.error("Error generating content with Gemini:", error);
+    return {
+      success: false,
+      error: error.message,
+    };
   }
 };
